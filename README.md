@@ -19,6 +19,44 @@ uv pip install -e .
 uv run pytest
 ```
 
+### Docker Setup
+
+You can build and run Just Prompt using Docker:
+
+```bash
+# Build the Docker image
+docker build -t just-prompt .
+```
+
+#### Integration with MCP Clients
+
+To use Just Prompt with MCP clients, add the following configuration to your client's settings:
+
+```json
+{
+  "mcpServers": {
+    "just-prompt": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "--mount", "type=bind,source=<YOUR_WORKSPACE_PATH>,target=/workspace",
+        "-e", "OPENAI_API_KEY=<YOUR_OPENAI_KEY>",
+        "-e", "ANTHROPIC_API_KEY=<YOUR_ANTHROPIC_KEY>",
+        "-e", "GEMINI_API_KEY=<YOUR_GEMINI_KEY>",
+        "-e", "GROQ_API_KEY=<YOUR_GROQ_KEY>",
+        "-e", "DEEPSEEK_API_KEY=<YOUR_DEEPSEEK_KEY>",
+        "-e", "OLLAMA_HOST=http://host.docker.internal:11434",
+        "just-prompt"
+      ]
+    }
+  }
+}
+```
+
+Note: Replace `<YOUR_WORKSPACE_PATH>` with the absolute path to your workspace directory and add your API keys as needed.
+
 ### Environment Configuration
 
 Create and edit your `.env` file with your API keys:
