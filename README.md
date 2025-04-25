@@ -1,88 +1,34 @@
-# Just Prompt - A lightweight MCP server for LLM providers
+# Just Prompt - MCP Server (Experimental)
 
-`just-prompt` is a Model Control Protocol (MCP) server that provides a unified interface to various Large Language Model (LLM) providers including OpenAI, Anthropic, Google Gemini, Groq, DeepSeek, and Ollama.
+A lightweight MCP server providing unified access to popular LLM providers including OpenAI, Anthropic, Google Gemini, Groq, DeepSeek, and Ollama.
 
-## Tools
+## Setup
 
-The following MCP tools are available in the server:
-
-- **`prompt`**: Send a prompt to multiple LLM models
-  - Parameters:
-    - `text`: The prompt text
-    - `models_prefixed_by_provider` (optional): List of models with provider prefixes. If not provided, uses default models.
-
-- **`prompt_from_file`**: Send a prompt from a file to multiple LLM models
-  - Parameters:
-    - `file`: Path to the file containing the prompt
-    - `models_prefixed_by_provider` (optional): List of models with provider prefixes. If not provided, uses default models.
-
-- **`prompt_from_file_to_file`**: Send a prompt from a file to multiple LLM models and save responses as markdown files
-  - Parameters:
-    - `file`: Path to the file containing the prompt
-    - `models_prefixed_by_provider` (optional): List of models with provider prefixes. If not provided, uses default models.
-    - `output_dir` (default: "."): Directory to save the response markdown files to
-
-- **`list_providers`**: List all available LLM providers
-  - Parameters: None
-
-- **`list_models`**: List all available models for a specific LLM provider
-  - Parameters:
-    - `provider`: Provider to list models for (e.g., 'openai' or 'o')
-
-## Provider Prefixes
-> every model must be prefixed with the provider name
->
-> use the short name for faster referencing
-
-- `o` or `openai`: OpenAI 
-  - `o:gpt-4o-mini`
-  - `openai:gpt-4o-mini`
-- `a` or `anthropic`: Anthropic 
-  - `a:claude-3-5-haiku`
-  - `anthropic:claude-3-5-haiku`
-- `g` or `gemini`: Google Gemini 
-  - `g:gemini-2.5-pro-exp-03-25`
-  - `gemini:gemini:gemini-2.5-pro-exp-03-25`
-- `q` or `groq`: Groq 
-  - `q:llama-3.1-70b-versatile`
-  - `groq:llama-3.1-70b-versatile`
-- `d` or `deepseek`: DeepSeek 
-  - `d:deepseek-coder`
-  - `deepseek:deepseek-coder`
-- `l` or `ollama`: Ollama 
-  - `l:llama3.1`
-  - `ollama:llama3.1`
-
-## Features
-
-- Unified API for multiple LLM providers
-- Support for text prompts from strings or files
-- Run multiple models in parallel
-- Automatic model name correction using the first model in the `--default-models` list
-- Ability to save responses to files
-- Easy listing of available providers and models
-
-## Installation
+### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/just-prompt.git
+# Clone and install
+git clone https://github.com/danielscholl/just-prompt-mcp.git
 cd just-prompt
-
-# Install with pip
 uv sync
+
+# Install
+uv pip install -e .
+
+# Run tests to verify installation
+uv run pytest
 ```
 
-### Environment Variables
+### Environment Configuration
 
-Create a `.env` file with your API keys (you can copy the `.env.sample` file):
+Create and edit your `.env` file with your API keys:
 
 ```bash
+# Create environment file from template
 cp .env.sample .env
 ```
 
-Then edit the `.env` file to add your API keys (or export them in your shell):
-
+Required API keys in your `.env` file:
 ```
 OPENAI_API_KEY=your_openai_api_key_here
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
@@ -92,175 +38,100 @@ DEEPSEEK_API_KEY=your_deepseek_api_key_here
 OLLAMA_HOST=http://localhost:11434
 ```
 
-## Claude Code Installation
+### Claude Code Setup
 
-Default model set to `anthropic:claude-3-7-sonnet-20250219`.
+Setting up Just Prompt with Claude Code:
 
-If you use Claude Code right out of the repository you can see in the .mcp.json file we set the default models to...
+> Note: "--directory" would be the path to the source code if not in the same directory.
 
-```
+```bash
+# Copy this JSON configuration
 {
-  "mcpServers": {
-    "just-prompt": {
-      "type": "stdio",
-      "command": "uv",
-      "args": [
-        "--directory",
-        ".",
-        "run",
-        "just-prompt",
-        "--default-models",
-        "anthropic:claude-3-7-sonnet-20250219,openai:o3-mini,gemini:gemini-2.5-pro-exp-03-25"
-      ],
-      "env": {}
-    }
-  }
+    "command": "uv",
+    "args": ["--directory", ".", "run", "just-prompt", "--default-models", "anthropic:claude-3-7-sonnet-20250219"]
 }
-```
 
-The `--default-models` parameter sets the models to use when none are explicitly provided to the API endpoints. The first model in the list is also used for model name correction when needed. This can be a list of models separated by commas.
-
-When starting the server, it will automatically check which API keys are available in your environment and inform you which providers you can use. If a key is missing, the provider will be listed as unavailable, but the server will still start and can be used with the providers that are available.
-
-### Using `mcp add-json`
-
-Copy this and paste it into claude code with BUT don't run until you copy the json
-
-```
+# Then run this command in Claude Code
 claude mcp add just-prompt "$(pbpaste)"
 ```
 
-JSON to copy
-
-```
-{
-    "command": "uv",
-    "args": ["--directory", ".", "run", "just-prompt"]
-}
-```
-
-With a custom default model set to `openai:gpt-4o`.
-
-```
-{
-    "command": "uv",
-    "args": ["--directory", ".", "run", "just-prompt", "--default-models", "openai:gpt-4o"]
-}
-```
-
-With multiple default models:
-
-```
-{
-    "command": "uv",
-    "args": ["--directory", ".", "run", "just-prompt", "--default-models", "anthropic:claude-3-7-sonnet-20250219,openai:gpt-4o,gemini:gemini-2.5-pro-exp-03-25"]
-}
-```
-
-### Using `mcp add` with project scope
-
+To remove the configuration later:
 ```bash
-# With default model (anthropic:claude-3-7-sonnet-20250219)
-claude mcp add just-prompt -s project \
-  -- \
-    uv --directory . \
-    run just-prompt
-
-# With custom default model
-claude mcp add just-prompt -s project \
-  -- \
-  uv --directory . \
-  run just-prompt --default-models "openai:gpt-4o"
-
-# With multiple default models
-claude mcp add just-prompt -s user \
-  -- \
-  uv --directory . \
-  run just-prompt --default-models "anthropic:claude-3-7-sonnet-20250219:4k,openai:o3-mini,gemini:gemini-2.0-flash,openai:gpt-4.5-preview,gemini:gemini-2.5-pro-exp-03-25"
-```
-
-
-## `mcp remove`
-
 claude mcp remove just-prompt
+```
 
-## Running Tests
+## Available LLM Providers
+
+| Provider | Short Prefix | Full Prefix | Example Usage |
+|----------|--------------|-------------|--------------|
+| OpenAI   | `o`          | `openai`    | `o:gpt-4o-mini` |
+| Anthropic | `a`         | `anthropic` | `a:claude-3-5-haiku` |
+| Google Gemini | `g`     | `gemini`    | `g:gemini-2.5-pro-exp-03-25` |
+| Groq     | `q`          | `groq`      | `q:llama-3.1-70b-versatile` |
+| DeepSeek | `d`          | `deepseek`  | `d:deepseek-coder` |
+| Ollama   | `l`          | `ollama`    | `l:llama3.1` |
+
+## MCP Tools
+
+### Send Prompts to Models
+
+Send text prompts to one or more LLM models and receive responses.
 
 ```bash
-uv run pytest
+# Basic prompt with default model
+prompt: "Your prompt text here"
+
+# Specify model(s)
+prompt: "Your prompt text here" "openai:gpt-4o"
+
+# Examples with thinking capability
+prompt: "Develop a strategy for learning how to create MCP Servers for AI" "anthropic:claude-3-7-sonnet-20250219:4k"
+
+prompt: "Write a function to calculate the factorial of a number" "openai:o4-mini:high"
 ```
 
-## Codebase Structure
+### List Available Options
 
-```
-.
-├── ai_docs/                   # Documentation for AI model details
-│   ├── llm_providers_details.xml
-│   └── pocket-pick-mcp-server-example.xml
-├── list_models.py             # Script to list available LLM models
-├── pyproject.toml             # Python project configuration
-├── specs/                     # Project specifications
-│   └── init-just-prompt.md
-├── src/                       # Source code directory
-│   └── just_prompt/
-│       ├── __init__.py
-│       ├── __main__.py
-│       ├── atoms/             # Core components
-│       │   ├── llm_providers/ # Individual provider implementations
-│       │   │   ├── anthropic.py
-│       │   │   ├── deepseek.py
-│       │   │   ├── gemini.py
-│       │   │   ├── groq.py
-│       │   │   ├── ollama.py
-│       │   │   └── openai.py
-│       │   └── shared/        # Shared utilities and data types
-│       │       ├── data_types.py
-│       │       ├── model_router.py
-│       │       ├── utils.py
-│       │       └── validator.py
-│       ├── molecules/         # Higher-level functionality
-│       │   ├── list_models.py
-│       │   ├── list_providers.py
-│       │   ├── prompt.py
-│       │   ├── prompt_from_file.py
-│       │   └── prompt_from_file_to_file.py
-│       ├── server.py          # MCP server implementation
-│       └── tests/             # Test directory
-│           ├── atoms/         # Tests for atoms
-│           │   ├── llm_providers/
-│           │   └── shared/
-│           └── molecules/     # Tests for molecules
-```
+Check which providers and models are available for use.
 
-## Context Priming
-READ README.md, then run git ls-files, and 'eza --git-ignore --tree' to understand the context of the project.
-
-## Thinking Tokens with Claude
-
-The Anthropic Claude model `claude-3-7-sonnet-20250219` supports extended thinking capabilities using thinking tokens. This allows Claude to do more thorough thought processes before answering.
-
-You can enable thinking tokens by adding a suffix to the model name in this format:
-- `anthropic:claude-3-7-sonnet-20250219:1k` - Use 1024 thinking tokens
-- `anthropic:claude-3-7-sonnet-20250219:4k` - Use 4096 thinking tokens
-- `anthropic:claude-3-7-sonnet-20250219:8000` - Use 8000 thinking tokens
-
-Example usage:
 ```bash
-# Using 4k thinking tokens with Claude
-uv run just-prompt prompt "Analyze the advantages and disadvantages of quantum computing vs classical computing" \
-  --models-prefixed-by-provider anthropic:claude-3-7-sonnet-20250219:4k
+# List all providers
+list-providers
+
+# List models for a specific provider
+list-models: "openai"
 ```
 
-Notes:
-- Thinking tokens are only supported for the `claude-3-7-sonnet-20250219` model
-- Valid thinking token budgets range from 1024 to 16000
-- Values outside this range will be automatically adjusted to be within range
-- You can specify the budget with k notation (1k, 4k, etc.) or with exact numbers (1024, 4096, etc.)
+### Work with Files
 
-## Resources
-- https://docs.anthropic.com/en/api/models-list?q=list+models
-- https://github.com/googleapis/python-genai
-- https://platform.openai.com/docs/api-reference/models/list
-- https://api-docs.deepseek.com/api/list-models
-- https://github.com/ollama/ollama-python
-- https://github.com/openai/openai-python
+Process prompts from files and save responses to files for batch processing.
+
+```bash
+# Send prompt from file
+prompt-from-file: "prompt.txt"
+
+# Save responses to files
+prompt-from-file-to-file: "prompt.txt" "./responses"
+```
+
+## Thinking and Reasoning Capabilities
+
+Each provider offers special capabilities to enhance reasoning on complex questions:
+
+| Provider | Model | Capability | Format | Range | Example |
+|----------|-------|------------|--------|-------|---------|
+| Anthropic | claude-3-7-sonnet-20250219 | Thinking tokens | `:Nk` or `:N` | 1024-16000 | `anthropic:claude-3-7-sonnet-20250219:4k` |
+| OpenAI | o3-mini, o4-mini, o3 | Reasoning effort | `:level` | low, medium, high | `openai:o3-mini:high` |
+| Google | gemini-2.5-flash-preview-04-17 | Thinking budget | `:Nk` or `:N` | 0-24576 | `gemini:gemini-2.5-flash-preview-04-17:4k` |
+
+**Usage examples:**
+```bash
+# Claude with 4k thinking tokens
+prompt: "Analyze quantum computing applications" "anthropic:claude-3-7-sonnet-20250219:4k"
+
+# OpenAI with high reasoning effort
+prompt: "Solve this complex math problem" "openai:o3-mini:high"
+
+# Gemini with 8k thinking budget
+prompt: "Evaluate climate change solutions" "gemini:gemini-2.5-flash-preview-04-17:8k"
+```

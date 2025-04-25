@@ -4,6 +4,7 @@ Utility functions for just-prompt.
 
 from typing import Tuple, List
 import os
+import re
 from dotenv import load_dotenv
 import logging
 
@@ -41,6 +42,41 @@ def split_provider_and_model(model_string: str) -> Tuple[str, str]:
     
     provider, model = parts
     return provider, model
+
+
+def parse_reasoning_effort(model: str) -> Tuple[str, str]:
+    """
+    Parse a model name to check for reasoning effort levels.
+    Only works with supported OpenAI models (o3-mini, o4-mini, o3, etc.).
+    
+    Supported formats:
+    - model:low, model:medium, model:high
+    
+    Args:
+        model: The model name potentially with a reasoning effort suffix
+        
+    Returns:
+        Tuple of (base_model_name, reasoning_effort)
+        If no reasoning suffix is found, reasoning_effort will be None
+    """
+    pattern = r'^(.+?)(?::(.+))?$'
+    match = re.match(pattern, model)
+    
+    if not match:
+        return model, None
+    
+    base_model = match.group(1)
+    reasoning_suffix = match.group(2)
+    
+    if not reasoning_suffix:
+        return base_model, None
+        
+    # Only accept low, medium, high for the reasoning suffix
+    if reasoning_suffix.lower() in ['low', 'medium', 'high']:
+        return base_model, reasoning_suffix.lower()
+    
+    # If suffix doesn't match expected values, ignore it
+    return base_model, None
 
 
 def get_provider_from_prefix(prefix: str) -> str:
