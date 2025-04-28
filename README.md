@@ -153,6 +153,25 @@ prompt-from-file: "prompt.txt"
 prompt-from-file-to-file: "prompt.txt" "./responses"
 ```
 
+### CEO and Board Decision Making
+
+Send a prompt to multiple models as a "board of directors", then have a "CEO" model make a final decision based on all responses.
+
+```bash
+# Use default models as board members and default CEO model
+ceo_and_board_prompt: "strategic_question.txt" "./decisions"
+
+# Specify board members and CEO model
+ceo_and_board_prompt: "strategic_question.txt" "./decisions" ["anthropic:claude-3-7-sonnet-20250219", "openai:gpt-4o", "gemini:gemini-2.5-pro-preview-03-25"] "openai:o3"
+```
+
+This tool:
+1. Sends your prompt to multiple models (the "board")
+2. Collects all their responses
+3. Sends the original prompt and all board responses to a CEO model
+4. The CEO model evaluates all responses and makes a final decision
+5. All responses and the final decision are saved as markdown files
+
 ## Thinking and Reasoning Capabilities
 
 Each provider offers special capabilities to enhance reasoning on complex questions:
