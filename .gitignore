@@ -1,5 +1,8 @@
 ultra_diff_review/
 diff.md
+prompts/responses
+.aider*
+!.vscode/mcp.json
 
 # Python-generated files
 __pycache__/
@@ -57,13 +60,6 @@ dmypy.json
 
 # IDE specific files
 .idea/
-.vscode/
 *.swp
 *.swo
 .DS_Store
-
-
-prompts/responses
-.aider*
-
-focus_output/
