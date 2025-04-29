@@ -1,3 +1,22 @@
+"""
+Business Analyst prompt functionality for just-prompt.
+"""
+
+from typing import List
+import logging
+import os
+from pathlib import Path
+
+from .prompt_from_file_to_file import prompt_from_file_to_file
+from .prompt import prompt
+from ..atoms.shared.utils import DEFAULT_MODEL
+
+logger = logging.getLogger(__name__)
+
+# Default Business Analyst model
+DEFAULT_ANALYST_MODEL = "openai:o3"
+
+# Default Business Analyst prompt template
 DEFAULT_ANALYST_PROMPT = """
 <purpose>
     You are a world-class expert Market & Business Analyst and also the best research assistant I have ever met, possessing deep expertise in both comprehensive market research and collaborative project definition. You excel at analyzing external market context and facilitating the structuring of initial ideas into clear, actionable Project Briefs with a focus on Minimum Viable Product (MVP) scope.
@@ -13,26 +32,26 @@ DEFAULT_ANALYST_PROMPT = """
 
 <modes>
     <mode>
-        <name>Market Research Mode</name>
+        <n>Market Research Mode</n>
         <description>Conduct deep research on a provided product concept or market area</description>
         <outputs>
-            <output>Market Needs/Pain Points</output>
-            <output>Competitor Landscape</output>
-            <output>Target User Demographics/Behaviors</output>
+            <o>Market Needs/Pain Points</o>
+            <o>Competitor Landscape</o>
+            <o>Target User Demographics/Behaviors</o>
         </outputs>
         <tone>Professional, analytical, informative, objective</tone>
     </mode>
     
     <mode>
-        <name>Project Briefing Mode</name>
+        <n>Project Briefing Mode</n>
         <description>Collaboratively guide the user through brainstorming and definition</description>
         <outputs>
-            <output>Core Problem</output>
-            <output>Goals</output>
-            <output>Audience</output>
-            <output>Core Concept/Features (High-Level)</output>
-            <output>MVP Scope (In/Out)</output>
-            <output>Initial Technical Leanings (Optional)</output>
+            <o>Core Problem</o>
+            <o>Goals</o>
+            <o>Audience</o>
+            <o>Core Concept/Features (High-Level)</o>
+            <o>MVP Scope (In/Out)</o>
+            <o>Initial Technical Leanings (Optional)</o>
         </outputs>
         <tone>Collaborative, inquisitive, structured, helpful</tone>
     </mode>
@@ -55,5 +74,99 @@ DEFAULT_ANALYST_PROMPT = """
     <step>Presentation: Present final report or Project Brief document</step>
 </interaction-flow>
 
-<user-request>{user_request}</user-request>
-""" 
+<exclusions>
+    <exclude>Do not include any metadata, headers, footers, or formatting that isn't part of the actual project brief or market research report.</exclude>
+    <exclude>Only include the content directly relevant to the requested output.</exclude>
+</exclusions>
+
+<analyst-request>{analyst_request}</analyst-request>
+"""
+
+
+def business_analyst_prompt(
+    from_file: str, 
+    output_dir: str = ".", 
+    models_prefixed_by_provider: List[str] = None,
+    analyst_model: str = DEFAULT_ANALYST_MODEL,
+    business_analyst_prompt: str = DEFAULT_ANALYST_PROMPT
+) -> str:
+    """
+    Process a prompt file with multiple models as analysts,
+    then have a business analyst model create a product brief.
+    
+    Args:
+        from_file: Path to the text file containing the prompt
+        output_dir: Directory to save response files (default: current directory)
+        models_prefixed_by_provider: List of model strings for the analysis
+                               If None, uses the DEFAULT_MODELS environment variable
+        analyst_model: Model string for the business analyst
+        business_analyst_prompt: Template for the business analyst prompt
+        
+    Returns:
+        Path to the business analyst brief file
+    """
+    # Validate output directory
+    output_path = Path(output_dir)
+    if not output_path.exists():
+        output_path.mkdir(parents=True, exist_ok=True)
+    
+    if not output_path.is_dir():
+        raise ValueError(f"Not a directory: {output_dir}")
+    
+    # Step 1: Get analyst responses
+    analyst_response_files = prompt_from_file_to_file(
+        from_file, 
+        models_prefixed_by_provider, 
+        output_dir
+    )
+    
+    # Get the original prompt from the file
+    try:
+        with open(from_file, 'r', encoding='utf-8') as f:
+            original_prompt = f.read()
+    except Exception as e:
+        logger.error(f"Error reading original prompt file: {e}")
+        raise ValueError(f"Could not read prompt file: {from_file}")
+    
+    # Get the models that were actually used
+    models_used = models_prefixed_by_provider
+    if not models_used:
+        default_models = os.environ.get("DEFAULT_MODELS", DEFAULT_MODEL)
+        models_used = [model.strip() for model in default_models.split(",")]
+    
+    # Step 2: Read in analyst responses
+    analyst_responses = ""
+    
+    for i, response_file in enumerate(analyst_response_files):
+        try:
+            with open(response_file, 'r', encoding='utf-8') as f:
+                response_content = f.read()
+            # Format for the business analyst prompt
+            model_name = models_used[i]
+            analyst_responses += f"\n\n--- Response from {model_name} ---\n\n{response_content}\n\n"
+        except Exception as e:
+            logger.error(f"Error reading response file {response_file}: {e}")
+            analyst_responses += f"\n\n--- Response from {models_used[i]} ---\n\nERROR: Could not read response file.\n\n"
+    
+    # Step 3: Format business analyst prompt with the original prompt
+    final_prompt = business_analyst_prompt.format(
+        analyst_request=original_prompt
+    )
+    
+    # Add the analyst responses to the original prompt
+    final_prompt += f"\n\n<research-material>\n{analyst_responses}\n</research-material>"
+    
+    # Step 4: Send to business analyst model for project brief
+    analyst_response = prompt(final_prompt, [analyst_model])[0]
+    
+    # Step 5: Write business analyst brief to file
+    brief_file = output_path / "business_analyst_brief.md"
+    try:
+        with open(brief_file, 'w', encoding='utf-8') as f:
+            f.write(analyst_response)
+        logger.info(f"Business analyst brief written to {brief_file}")
+    except Exception as e:
+        logger.error(f"Error writing business analyst brief to {brief_file}: {e}")
+        raise ValueError(f"Could not write business analyst brief file: {brief_file}")
+    
+    return str(brief_file)

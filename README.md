@@ -114,6 +114,21 @@ claude mcp remove just-prompt
 
 ### Send Prompts to Models
 
+**Usage examples:**
+```bash
+# Basic prompt with default model
+prompt: "ping"
+
+# Claude with 4k thinking tokens
+prompt: "Analyze quantum computing applications" []"a:claude-3-7-sonnet-20250219:4k"]
+
+# OpenAI with high reasoning effort
+prompt: "Solve this complex math problem" []"openai:o3-mini:high"]
+
+# Gemini with 8k thinking budget
+prompt: "Evaluate climate change solutions" []"gemini:gemini-2.5-flash-preview-04-17:8k"]
+```
+
 Send text prompts to one or more LLM models and receive responses.
 
 ```bash
@@ -147,10 +162,10 @@ Process prompts from files and save responses to files for batch processing.
 
 ```bash
 # Send prompt from file
-prompt-from-file: "prompt.txt"
+prompt-from-file: [o:o4-mini] "prompts/function.txt"
 
 # Save responses to files
-prompt-from-file-to-file: "prompt.txt" "./responses"
+prompt-from-file-to-file: [o:o4-mini] "prompts/uv_script.txt" "prompts/responses"
 ```
 
 ### CEO and Board Decision Making
@@ -159,10 +174,10 @@ Send a prompt to multiple models as a "board of directors", then have a "CEO" mo
 
 ```bash
 # Use default models as board members and default CEO model
-ceo_and_board_prompt: "strategic_question.txt" "./decisions"
+ceo_and_board_prompt: "./prompts/ceo_decision_iac.txt" "./prompts/responses"
 
 # Specify board members and CEO model
-ceo_and_board_prompt: "strategic_question.txt" "./decisions" ["anthropic:claude-3-7-sonnet-20250219", "openai:gpt-4o", "gemini:gemini-2.5-pro-preview-03-25"] "openai:o3"
+ceo_and_board_prompt: "./prompts/ceo_decision_ai_assistant.txt" "prompts/responses" ["anthropic:claude-3-7-sonnet-20250219", "openai:gpt-4o", "gemini:gemini-2.5-pro-preview-03-25"] "openai:o3"
 ```
 
 This tool:
@@ -171,6 +186,21 @@ This tool:
 3. Sends the original prompt and all board responses to a CEO model
 4. The CEO model evaluates all responses and makes a final decision
 5. All responses and the final decision are saved as markdown files
+
+### Business Analyst Project Briefing
+
+Send a prompt to multiple models as analysts, then have a business analyst model create a comprehensive product brief.
+
+```bash
+business_analyst_prompt: "./prompts/product_concept.txt" "./prompts/responses" ["o:openai:o3"]
+```
+
+This tool:
+1. Sends your prompt to multiple models (the "analysts")
+2. Collects all their research and analyses
+3. Sends the original prompt along with all research to a business analyst model
+4. The business analyst creates a comprehensive project brief with market research and MVP specifications
+5. All analyst responses and the final brief are saved as markdown files
 
 ## Thinking and Reasoning Capabilities
 
@@ -182,14 +212,3 @@ Each provider offers special capabilities to enhance reasoning on complex questi
 | OpenAI | o4-mini, o3 | Reasoning effort | `:level` | low, medium, high | `openai:o3-mini:high` |
 | Google | gemini-2.5-flash-preview-04-17 | Thinking budget | `:Nk` or `:N` | 0-24576 | `gemini:gemini-2.5-flash-preview-04-17:8k` |
 
-**Usage examples:**
-```bash
-# Claude with 4k thinking tokens
-prompt: "Analyze quantum computing applications" "anthropic:claude-3-7-sonnet-20250219:4k"
-
-# OpenAI with high reasoning effort
-prompt: "Solve this complex math problem" "openai:o3-mini:high"
-
-# Gemini with 8k thinking budget
-prompt: "Evaluate climate change solutions" "gemini:gemini-2.5-flash-preview-04-17:8k"
-```

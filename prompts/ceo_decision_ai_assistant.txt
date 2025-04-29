@@ -1,0 +1,203 @@
+<purpose>
+    I'm evaluating AI coding assistants to enhance developer productivity across my engineering team.
+    Help me decide which tool(s) to adopt based on everything you know about them. I'm open to using a combination of tools for different needs. Here are the top 3 factors I'm considering:
+</purpose>
+
+<factors>
+    1. Code Quality (Accuracy and relevance of suggestions)
+    2. Developer Experience (IDE integration, usability)
+    3. Cost (Pricing and licensing model)
+</factors>
+
+<decision-resources>
+
+## 1. GitHub Copilot  
+
+### Features & Capabilities  
+| Category | Capabilities | Notes |  
+|---|---|---|---|  
+| Code Generation | Real-time code suggestions, function completion, comment-to-code | Trained on public GitHub repositories |  
+| IDE Support | VS Code, Visual Studio, JetBrains IDEs, Neovim | Extensive integration options |  
+| Languages | Supports 30+ programming languages | Strong in Python, JavaScript, TypeScript, Java |
+
+### Signature Features  
+- **Copilot Chat** – Conversational interface for code-related questions
+- **Copilot Enterprise** – Organization-level deployment with privacy controls
+- **@-mentions** – Directly prompt Copilot for specific tasks within comments
+
+### Integration & Infrastructure  
+Built on OpenAI Codex (GPT foundation), extensive GitHub ecosystem integration, CI/CD workflow awareness.
+
+### Pricing & Access  
+- **$10/month** (individual), **$19/user/month** (business)
+- **Free** for students, open source maintainers, and teachers
+
+#### Pros  
+1. Deep integration with GitHub ecosystem and popular IDEs
+2. Best real-time suggestion experience for common languages
+3. Strong enterprise features and security controls
+
+#### Cons  
+1. May suggest code with license compatibility issues
+2. Limited understanding of complex project structures
+3. Requires internet connection for all features
+
+---
+
+## 2. Claude Code (Anthropic)  
+
+### Features & Capabilities  
+| Category | Capabilities | Notes |  
+|---|---|---|---|  
+| Code Generation | Whole function generation, code explanation, refactoring | Strong reasoning capabilities |  
+| IDE Support | VS Code extension, web interface | More limited IDE integration |  
+| Languages | Strong in Python, JavaScript, TypeScript, modern frameworks | Particularly good at complex logic |
+
+### Signature Features  
+- **Context-aware reasoning** – Better understanding of project structure and requirements
+- **Security focus** – Less likely to suggest vulnerable code patterns
+- **Detailed explanations** – Clear documentation of generated code
+
+### Integration & Infrastructure  
+Built on Claude models, focuses on understanding context and providing explanations, API-first approach.
+
+### Pricing & Access  
+- **Claude Pro**: $20/month (includes coding capabilities)
+- **Enterprise**: Custom pricing with team management features
+
+#### Pros  
+1. Superior reasoning about complex coding tasks
+2. Excellent at explaining code and suggesting improvements
+3. Strong safety and security focus
+
+#### Cons  
+1. Fewer IDE integrations compared to competitors
+2. Sometimes slower for real-time completion
+3. Higher latency for some operations
+
+---
+
+## 3. Cursor  
+
+### Features & Capabilities  
+| Category | Capabilities | Notes |  
+|---|---|---|---|  
+| Code Generation | Multi-file edits, chat interface, documentation generation | Built as an AI-native code editor |  
+| IDE Support | Custom editor based on VS Code | Complete editor redesigned for AI interactions |  
+| Languages | Comprehensive language support | Particularly strong in full-stack development |
+
+### Signature Features  
+- **Full-context understanding** – Analyzes entire codebase for relevant suggestions
+- **Built-in chat** – Conversational interface directly in the editor
+- **Multi-file edits** – Can implement changes across multiple files
+
+### Integration & Infrastructure  
+Purpose-built AI code editor, supports team sharing and collaboration, built on top of various AI models.
+
+### Pricing & Access  
+- **Free tier** with usage limits
+- **Pro**: $20/month with higher usage limits
+- **Team**: Custom pricing with collaboration features
+
+#### Pros  
+1. Purpose-built experience for AI-assisted development
+2. Strong multi-file context understanding
+3. Active development with frequent improvements
+
+#### Cons  
+1. Requires switching from existing editors
+2. Steeper learning curve for the AI interaction patterns
+3. May have performance issues with very large codebases
+
+---
+
+## 4. Codex (OpenAI)  
+
+### Features & Capabilities  
+| Category | Capabilities | Notes |  
+|---|---|---|---|  
+| Code Generation | API-based code generation, translation, explanation | Used as foundation for other tools |  
+| IDE Support | No direct IDE integration (API only) | Powers other tools like Copilot |  
+| Languages | Strong in popular languages | Best in Python, JavaScript, Ruby |
+
+### Signature Features  
+- **Flexible API** – Can be integrated into custom tools and workflows
+- **Multi-language translation** – Convert between programming languages
+- **Natural language to code** – Generate code from descriptions
+
+### Integration & Infrastructure  
+API-based service, part of OpenAI's model offerings, requires custom integration work.
+
+### Pricing & Access  
+- Available through OpenAI API with usage-based pricing
+- Requires API key and integration development
+
+#### Pros  
+1. Flexibility to build custom AI coding tools
+2. Direct access to OpenAI's models for code generation
+3. Can be tailored to specific organizational needs
+
+#### Cons  
+1. No out-of-box IDE integration
+2. Requires development work to implement
+3. Usage-based pricing can be unpredictable
+
+---
+
+## 5. Combination Strategies
+
+### Complementary Tool Pairings
+| Primary Tool | Complementary Tool | Use Case |
+|---|---|---|
+| GitHub Copilot | Claude Code | Use Copilot for quick inline suggestions + Claude for complex reasoning tasks |
+| Cursor | GitHub Copilot | Cursor for project-wide changes + Copilot for focused coding sessions |
+| Any Tool | Codex API | Custom integration for specialized workflows beyond standard capabilities |
+
+### Team-Based Approaches
+Different roles can benefit from different tools:
+- **Frontend developers**: GitHub Copilot's strength with JavaScript/TypeScript and UI patterns
+- **Backend/systems engineers**: Claude Code's reasoning capabilities for complex algorithms
+- **DevOps/infrastructure**: Combination of tools with custom Codex integrations for automation
+
+### Workflow-Based Integration
+- **Exploratory coding**: Cursor's multi-file understanding and chat
+- **Feature implementation**: GitHub Copilot's real-time suggestions
+- **Code review & refactoring**: Claude Code's explanation and reasoning
+- **Documentation**: All tools with appropriate prompting
+
+### Cost Considerations for Combined Approach
+| Strategy | Cost Structure | Notes |
+|---|---|---|
+| Full suite | $40-60/dev/month | All tools for maximum flexibility |
+| Strategic pairing | $20-30/dev/month | Two complementary tools (e.g., Copilot + Claude) |
+| Role-based | Varies | Different tools for different teams |
+
+#### Pros of Combined Approach
+1. Leverages the unique strengths of each tool
+2. Provides fallback options when one tool struggles
+3. Allows for specialized tool use based on task complexity
+
+#### Cons of Combined Approach
+1. Higher total cost and administrative overhead
+2. Learning curve for knowing which tool to use when
+3. Potential workflow disruption from context switching
+
+## How to think about your decision
+
+| Dimension | GitHub Copilot | Claude Code | Cursor | Codex | Combination | Quick take |
+|---|---|---|---|---|---|---|
+| **Code quality** | 🟢 Strong | 🟢 Excellent reasoning | 🟢 Good with context | 🟠 Variable | 🟢 Best overall | Different tools excel at different tasks |
+| **IDE integration** | 🟢 Extensive | 🟠 Limited | 🟢 Custom editor | 🔴 API only | 🟢 Flexible | Combination provides options for every environment |
+| **Cost model** | 🟢 Predictable | 🟢 Subscription | 🟢 Tiered | 🟠 Usage-based | 🟠 Higher total | Cost increases but with greater capability coverage |
+| **Learning curve** | 🟢 Minimal | 🟠 Moderate | 🟠 Steeper | 🔴 High (dev needed) | 🔴 Highest | Requires knowledge of when to use each tool |
+| **Enterprise features** | 🟢 Mature | 🟠 Developing | 🟠 Limited | 🟢 Customizable | 🟢 Comprehensive | Combination covers most enterprise needs |
+
+**Bottom line:**  
+- **Choose GitHub Copilot alone** if seamless IDE integration and immediate productivity gains are your priority, and your team works with popular languages and frameworks.
+- **Choose Claude Code alone** if you need more accurate complex code generation, better reasoning capabilities, and value detailed explanations and security focus.
+- **Choose Cursor alone** if you're willing to adopt a new editor for a fully integrated AI coding experience and want powerful multi-file understanding.
+- **Choose Codex API alone** if you need to build custom AI coding tools tailored to specific workflows or have specialized integration requirements.
+- **Choose a combination of tools** if you want to maximize the benefits across different coding scenarios, team roles, and workflow stages. The most common combination is GitHub Copilot for day-to-day coding with Claude Code for complex reasoning tasks.
+
+Consider running a pilot with various tool combinations to find the optimal balance between productivity enhancement and cost. Different teams within your organization may benefit from different combinations based on their specific needs.
+</decision-resources>
