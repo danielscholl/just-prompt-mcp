@@ -7,7 +7,6 @@ import logging
 import os
 from pathlib import Path
 
-from .prompt_from_file_to_file import prompt_from_file_to_file
 from .prompt import prompt
 from ..atoms.shared.utils import DEFAULT_MODEL
 
@@ -82,6 +81,30 @@ DEFAULT_ANALYST_PROMPT = """
 <analyst-request>{analyst_request}</analyst-request>
 """
 
+# Consolidation prompt template for merging multiple model briefs
+CONSOLIDATION_PROMPT = """
+<purpose>
+    You are a Lead Business Analyst responsible for consolidating multiple business briefs from different models into a single comprehensive project brief. Your task is to analyze multiple perspectives, identify commonalities and unique insights, and create a unified brief that captures the best aspects of each.
+</purpose>
+
+<instructions>
+    <instruction>Review each of the individual briefs provided below.</instruction>
+    <instruction>Identify key points, recommendations, and insights from each brief.</instruction>
+    <instruction>Consolidate the information into a single comprehensive brief that includes the most valuable insights from all sources.</instruction>
+    <instruction>Ensure your final brief is well-structured, clear, and actionable.</instruction>
+    <instruction>Include all relevant sections from the original briefs: Core Problem, Goals, Target Audience, Core Concept/Features, MVP Scope, and Technical Leanings.</instruction>
+    <instruction>Resolve any contradictions between the briefs by selecting the most well-reasoned approach.</instruction>
+</instructions>
+
+<original-prompt>
+{original_prompt}
+</original-prompt>
+
+<individual-briefs>
+{individual_briefs}
+</individual-briefs>
+"""
+
 
 def business_analyst_prompt(
     from_file: str, 
@@ -91,19 +114,19 @@ def business_analyst_prompt(
     business_analyst_prompt: str = DEFAULT_ANALYST_PROMPT
 ) -> str:
     """
-    Process a prompt file with multiple models as analysts,
-    then have a business analyst model create a product brief.
+    Process a prompt file with each specified model to create individual briefs.
+    If multiple models are specified, also create a consolidated final brief.
     
     Args:
         from_file: Path to the text file containing the prompt
         output_dir: Directory to save response files (default: current directory)
-        models_prefixed_by_provider: List of model strings for the analysis
-                               If None, uses the DEFAULT_MODELS environment variable
-        analyst_model: Model string for the business analyst
+        models_prefixed_by_provider: List of model strings for creating briefs
+                             If None, uses the DEFAULT_MODEL environment variable
+        analyst_model: Model string for the consolidation (if multiple models used)
         business_analyst_prompt: Template for the business analyst prompt
         
     Returns:
-        Path to the business analyst brief file
+        Path to the final business analyst brief file
     """
     # Validate output directory
     output_path = Path(output_dir)
@@ -113,12 +136,11 @@ def business_analyst_prompt(
     if not output_path.is_dir():
         raise ValueError(f"Not a directory: {output_dir}")
     
-    # Step 1: Get analyst responses
-    analyst_response_files = prompt_from_file_to_file(
-        from_file, 
-        models_prefixed_by_provider, 
-        output_dir
-    )
+    # Determine which models to use
+    models_used = models_prefixed_by_provider
+    if not models_used:
+        default_models = os.environ.get("DEFAULT_MODELS", DEFAULT_MODEL)
+        models_used = [model.strip() for model in default_models.split(",")]
     
     # Get the original prompt from the file
     try:
@@ -128,45 +150,61 @@ def business_analyst_prompt(
         logger.error(f"Error reading original prompt file: {e}")
         raise ValueError(f"Could not read prompt file: {from_file}")
     
-    # Get the models that were actually used
-    models_used = models_prefixed_by_provider
-    if not models_used:
-        default_models = os.environ.get("DEFAULT_MODELS", DEFAULT_MODEL)
-        models_used = [model.strip() for model in default_models.split(",")]
-    
-    # Step 2: Read in analyst responses
-    analyst_responses = ""
-    
-    for i, response_file in enumerate(analyst_response_files):
-        try:
-            with open(response_file, 'r', encoding='utf-8') as f:
-                response_content = f.read()
-            # Format for the business analyst prompt
-            model_name = models_used[i]
-            analyst_responses += f"\n\n--- Response from {model_name} ---\n\n{response_content}\n\n"
-        except Exception as e:
-            logger.error(f"Error reading response file {response_file}: {e}")
-            analyst_responses += f"\n\n--- Response from {models_used[i]} ---\n\nERROR: Could not read response file.\n\n"
-    
-    # Step 3: Format business analyst prompt with the original prompt
-    final_prompt = business_analyst_prompt.format(
+    # Format business analyst prompt with the original prompt
+    formatted_prompt = business_analyst_prompt.format(
         analyst_request=original_prompt
     )
     
-    # Add the analyst responses to the original prompt
-    final_prompt += f"\n\n<research-material>\n{analyst_responses}\n</research-material>"
+    # Step 1: Get individual briefs from each model
+    brief_files = []
+    briefs_content = []
     
-    # Step 4: Send to business analyst model for project brief
-    analyst_response = prompt(final_prompt, [analyst_model])[0]
+    # Get name of file without extension for naming output files
+    from_file_name = Path(from_file).stem
     
-    # Step 5: Write business analyst brief to file
-    brief_file = output_path / "business_analyst_brief.md"
-    try:
-        with open(brief_file, 'w', encoding='utf-8') as f:
-            f.write(analyst_response)
-        logger.info(f"Business analyst brief written to {brief_file}")
-    except Exception as e:
-        logger.error(f"Error writing business analyst brief to {brief_file}: {e}")
-        raise ValueError(f"Could not write business analyst brief file: {brief_file}")
+    # Generate a brief from each model
+    for model in models_used:
+        model_display_name = model.replace(":", "_").replace("/", "_")
+        brief_filename = f"{from_file_name}_{model_display_name}_brief.md"
+        brief_file_path = output_path / brief_filename
+        
+        # Get response from this model
+        model_response = prompt(formatted_prompt, [model])[0]
+        
+        # Save this model's brief
+        try:
+            with open(brief_file_path, 'w', encoding='utf-8') as f:
+                f.write(model_response)
+            logger.info(f"Brief from {model} written to {brief_file_path}")
+            brief_files.append(brief_file_path)
+            briefs_content.append(f"--- Brief from {model} ---\n\n{model_response}\n\n")
+        except Exception as e:
+            logger.error(f"Error writing brief from {model} to {brief_file_path}: {e}")
+            raise ValueError(f"Could not write brief file: {brief_file_path}")
     
-    return str(brief_file)
+    # Step 2: If multiple models were used, create a consolidated brief
+    final_brief_file = output_path / "business_analyst_brief.md"
+    
+    if len(models_used) > 1:
+        # Format consolidation prompt
+        consolidation_prompt = CONSOLIDATION_PROMPT.format(
+            original_prompt=original_prompt,
+            individual_briefs="\n\n".join(briefs_content)
+        )
+        
+        # Get consolidated response
+        consolidated_response = prompt(consolidation_prompt, [analyst_model])[0]
+        
+        # Save consolidated brief
+        try:
+            with open(final_brief_file, 'w', encoding='utf-8') as f:
+                f.write(consolidated_response)
+            logger.info(f"Consolidated business analyst brief written to {final_brief_file}")
+        except Exception as e:
+            logger.error(f"Error writing consolidated brief to {final_brief_file}: {e}")
+            raise ValueError(f"Could not write consolidated brief file: {final_brief_file}")
+    else:
+        # If only one model was used, the final brief is the same as the individual brief
+        final_brief_file = brief_files[0]
+    
+    return str(final_brief_file)

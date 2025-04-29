@@ -120,13 +120,13 @@ claude mcp remove just-prompt
 prompt: "ping"
 
 # Claude with 4k thinking tokens
-prompt: "Analyze quantum computing applications" []"a:claude-3-7-sonnet-20250219:4k"]
+prompt: "Analyze quantum computing applications" ["a:claude-3-7-sonnet-20250219:4k"]
 
 # OpenAI with high reasoning effort
-prompt: "Solve this complex math problem" []"openai:o3-mini:high"]
+prompt: "Solve this complex math problem" ["openai:o3-mini:high"]
 
 # Gemini with 8k thinking budget
-prompt: "Evaluate climate change solutions" []"gemini:gemini-2.5-flash-preview-04-17:8k"]
+prompt: "Evaluate climate change solutions" ["gemini:gemini-2.5-flash-preview-04-17:8k"]
 ```
 
 Send text prompts to one or more LLM models and receive responses.
@@ -180,27 +180,19 @@ ceo_and_board_prompt: "./prompts/ceo_decision_iac.txt" "./prompts/responses"
 ceo_and_board_prompt: "./prompts/ceo_decision_ai_assistant.txt" "prompts/responses" ["anthropic:claude-3-7-sonnet-20250219", "openai:gpt-4o", "gemini:gemini-2.5-pro-preview-03-25"] "openai:o3"
 ```
 
-This tool:
-1. Sends your prompt to multiple models (the "board")
-2. Collects all their responses
-3. Sends the original prompt and all board responses to a CEO model
-4. The CEO model evaluates all responses and makes a final decision
-5. All responses and the final decision are saved as markdown files
-
 ### Business Analyst Project Briefing
 
-Send a prompt to multiple models as analysts, then have a business analyst model create a comprehensive product brief.
+Send a prompt to one or more models to generate detailed business analyst briefs.
 
 ```bash
 business_analyst_prompt: "./prompts/product_concept.txt" "./prompts/responses" ["o:openai:o3"]
 ```
 
 This tool:
-1. Sends your prompt to multiple models (the "analysts")
-2. Collects all their research and analyses
-3. Sends the original prompt along with all research to a business analyst model
-4. The business analyst creates a comprehensive project brief with market research and MVP specifications
-5. All analyst responses and the final brief are saved as markdown files
+1. Sends your prompt to each specified model
+2. Each model creates its own business analyst brief
+3. If multiple models are specified, a consolidated final brief is created by combining insights from all individual briefs
+4. All individual briefs and (if multiple models are used) the consolidated brief are saved as markdown files
 
 ## Thinking and Reasoning Capabilities
 

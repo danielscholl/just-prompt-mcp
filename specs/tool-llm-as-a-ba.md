@@ -2,11 +2,40 @@ Feature Request: LLM as a Business Analyst
 
 ## Implementation Notes
 
-- Create a new tool 'business_analyst' in src/just_prompt/molecules/business_analyst.py
-- Definition business_analyst_prompt(from_file: str, output_dir: str = ., models_prefixed_by_provider: List[str] = None, analyst_model: str = DEFAULT_ANALYST_MODEL, business_analyst_prompt: str = DEFAULT_ANALYST_MODEL) -> None:
+- Create a new tool 'business_analyst' in src/just_prompt/molecules/business_analyst_prompt.py
+- Definition business_analyst_prompt(from_file: str, output_dir: str = ., models_prefixed_by_provider: List[str] = None, analyst_model: str = DEFAULT_ANALYST_MODEL, business_analyst_prompt: str = DEFAULT_ANALYST_PROMPT) -> str:
+- Send the prompt from the file to the analyst_model for each model in models_prefixed_by_provider to generate business analyst briefs
+- Each individual brief is saved with the format {prompt_file_stem}_{sanitized_model_name}_brief.md in the output_dir
+- If multiple models are specified, create a consolidated brief, saved as business_analyst_brief.md using the CONSOLIDATION_PROMPT
+- Return the path to the final brief file (either the consolidated brief or the single brief if only one model was used)
+- DEFAULT_ANALYST_MODEL is openai:o3
+- Create a CONSOLIDATION_PROMPT template to combine insights from multiple briefs when needed
+- Be sure to validate this functionality with uv run pytest <path-to-test-file>
+- After you implement, update the README.md with the new tool's functionality
+- Make sure this functionality works end to end. This functionality will be exposed as an MCP tool in the server.py file.
+- DEFAULT CONSOLIDATION_PROMPT template for merging multiple model briefs:
+```xml
+<purpose>
+    You are a Lead Business Analyst responsible for consolidating multiple business briefs from different models into a single comprehensive project brief. Your task is to analyze multiple perspectives, identify commonalities and unique insights, and create a unified brief that captures the best aspects of each.
+</purpose>
 
-- Use the existing prompt_from_file_to_file function to generate a document from the 'analyst' aka models_prefixed_by_provider.
-- Then run the business_analyst_prompt (xml style prompt) and the original question prompt to produce a product brief document.
+<instructions>
+    <instruction>Review each of the individual briefs provided below.</instruction>
+    <instruction>Identify key points, recommendations, and insights from each brief.</instruction>
+    <instruction>Consolidate the information into a single comprehensive brief that includes the most valuable insights from all sources.</instruction>
+    <instruction>Ensure your final brief is well-structured, clear, and actionable.</instruction>
+    <instruction>Include all relevant sections from the original briefs: Core Problem, Goals, Target Audience, Core Concept/Features, MVP Scope, and Technical Leanings.</instruction>
+    <instruction>Resolve any contradictions between the briefs by selecting the most well-reasoned approach.</instruction>
+</instructions>
+
+<original-prompt>
+{original_prompt}
+</original-prompt>
+
+<individual-briefs>
+{individual_briefs}
+</individual-briefs>
+```
 
 - DEFAULT_ANALYST_PROMPT is
 ```xml
@@ -69,21 +98,13 @@ Feature Request: LLM as a Business Analyst
 <analyst-request>{analyst_request}</analyst-request>
 """
 
-- DEFAULT_ANALYST_MODEL is openai:o3
-- The prompt_from_file_to_file will output a file for the analyst's response in the output_dir.
-- Be sure to validate this functionality with uv run pytest <path-to-test-file>
-- After you implement update the README.md with the new tool's functionality and run `git ls-files` to update the directory tree in the readme with the new files.
-- Make sure this functionality works end to end. This functionality will be exposed as an MCP tool in the server.py file.
-
 ## Relevant Files
 - src/just_prompt/server.py
 - src/just_prompt/molecules/business_analyst_prompt.py
-- src/just_prompt/molecules/prompt_from_file_to_file.py
-- src/just_prompt/molecules/prompt_from_file.py
 - src/just_prompt/molecules/prompt.py
 - src/just_prompt/atoms/llm_providers/openai.py
 - src/just_prompt/atoms/shared/utils.py
-- src/just_prompt/tests/molecules/business_analyst_prompt.py
+- src/just_prompt/tests/molecules/test_business_analyst_prompt.py
 
 ## Validation (Close the Loop)
 > Be sure to test this new capability with uv run pytest.
