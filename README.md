@@ -185,7 +185,7 @@ ceo_and_board_prompt: "./prompts/ceo_decision_ai_assistant.txt" "prompts/respons
 Send a prompt to one or more models to generate detailed business analyst briefs.
 
 ```bash
-business_analyst_prompt: "./prompts/product_concept.txt" "./prompts/responses" ["o:openai:o3"]
+business_analyst_prompt: "./prompts/product_concept.txt" "./prompts/responses" ["a:claude-3-7-sonnet-20250219"]
 ```
 
 This tool:
